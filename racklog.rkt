@@ -81,9 +81,9 @@
 (define %true
   (lambda (fk) fk))
 
-(define-syntax %assign
+(define-syntax %is
   (syntax-rules ()
-    [(%assign v (p ...) . e)
+    [(%is v (p ...) . e)
      (lambda (__fk)
        (if (or (and (logic-var? p) (unbound-logic-var? p)) ...)
            (__fk 'fail)
@@ -92,9 +92,9 @@
                     . e)) __fk)))]))
 
 (define ((make-binary-arithmetic-relation f) x y)
-  (%and (%assign #t (x) (number? x))
-        (%assign #t (y) (number? y))
-        (%assign #t (x y) (f x y))))
+  (%and (%is #t (x) (number? x))
+        (%is #t (y) (number? y))
+        (%is #t (x y) (f x y))))
 
 (define %=:= (make-binary-arithmetic-relation =))
 (define %> (make-binary-arithmetic-relation >))
@@ -316,7 +316,7 @@
   (->* () () #:rest (listof unifiable?) goal/c))
 
 ; XXX Add contracts in theses macro expansions
-(provide %and %assert! %assert-after! %cut-delimiter %free-vars %assign %let
+(provide %and %assert! %assert-after! %cut-delimiter %free-vars %is %let
          %or %rel %which %find-all !)
 (provide/contract
  [goal/c contract?]

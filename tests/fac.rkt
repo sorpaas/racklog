@@ -6,9 +6,9 @@
         [(0 1) !]
         [(x y) (%< x 0) ! %fail]
         [(x y)
-         (%assign x1 (x) (- x 1))
+         (%is x1 (x) (- x 1))
          (%factorial x1 y1)
-         (%assign y (y1 x) (* y1 x))]))
+         (%is y (y1 x) (* y1 x))]))
 
 (test
  (%which ()
