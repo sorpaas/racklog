@@ -81,75 +81,20 @@
 (define %true
   (lambda (fk) fk))
 
-(define-for-syntax orig-insp (variable-reference->module-declaration-inspector
-                              (#%variable-reference)))
-
-(define-syntax (%is stx)
-  (syntax-case stx ()
-    [(%is v e)
-     (with-syntax ([fe (syntax-disarm 
-                        (local-expand #'e 'expression empty)
-                        orig-insp)])
-       (syntax/loc stx
-         (lambda (__fk)
-           ((%= v (%is/fk fe __fk)) __fk))))]))
-(define-syntax (%is/fk stx)
-  (kernel-syntax-case stx #f
-    [(_ (#%plain-lambda fmls e ...) fk)
-     (syntax/loc stx (#%plain-lambda fmls (%is/fk e fk) ...))]
-    [(_ (case-lambda [fmls e ...] ...) fk)
-     (syntax/loc stx (case-lambda [fmls (%is/fk e fk) ...] ...))]
-    [(_ (if e1 e2 e3) fk)
-     (syntax/loc stx (if (%is/fk e1 fk)
-                         (%is/fk e2 fk) 
-                         (%is/fk e3 fk)))]
-    [(_ (begin e ...) fk)
-     (syntax/loc stx (begin (%is/fk e fk) ...))]
-    [(_ (begin0 e ...) fk)
-     (syntax/loc stx (begin0 (%is/fk e fk) ...))]
-    [(_ (let-values ([(v ...) ve] ...)
-          be ...) fk)
-     (syntax/loc stx
-       (let-values ([(v ...) (%is/fk ve fk)] ...) 
-         (%is/fk be fk) ...))]
-    [(_ (letrec-values ([(v ...) ve] ...)
-          be ...) fk)
-     (syntax/loc stx
-       (letrec-values ([(v ...) (%is/fk ve fk)] ...) 
-         (%is/fk be fk) ...))]
-    [(_ (set! i e) fk)
-     (syntax/loc stx (set! i (%is/fk e fk)))]
-    [(_ (quote d) fk)
-     (syntax/loc stx (quote d))]
-    [(_ (quote-syntax d) fk)
-     (syntax/loc stx (quote-syntax d))]
-    [(_ (with-continuation-mark e1 e2 e3) fk)
-     (syntax/loc stx (with-continuation-mark
-                         (%is/fk e1 fk)
-                       (%is/fk e2 fk) 
-                       (%is/fk e3 fk)))]
-    [(_ (#%plain-app e ...) fk)
-     (syntax/loc stx (#%plain-app (%is/fk e fk) ...))]
-    [(_ x fk)
-     (syntax/loc stx
-       (if (and (logic-var? x) (unbound-logic-var? x))
-           (fk 'fail) (logic-var-val* x)))]
-    
-    ))
-
-#;(define-syntax %is/fk
-  (syntax-rules (quote)
-    ((%is/fk (quote x) fk) (quote x))
-    ((%is/fk (x ...) fk)
-     ((%is/fk x fk) ...))
-    ((%is/fk x fk)
-     (if (and (logic-var? x) (unbound-logic-var? x))
-         (fk 'fail) (logic-var-val* x)))))
+(define-syntax %assign
+  (syntax-rules ()
+    [(%assign v (p ...) . e)
+     (lambda (__fk)
+       (if (or (and (logic-var? p) (unbound-logic-var? p)) ...)
+           (__fk 'fail)
+           ((%= v (let ([p (logic-var-val* p)]
+                        ...)
+                    . e)) __fk)))]))
 
 (define ((make-binary-arithmetic-relation f) x y)
-  (%and (%is #t (number? x))
-        (%is #t (number? y))
-        (%is #t (f x y))))
+  (%and (%assign #t (x) (number? x))
+        (%assign #t (y) (number? y))
+        (%assign #t (x y) (f x y))))
 
 (define %=:= (make-binary-arithmetic-relation =))
 (define %> (make-binary-arithmetic-relation >))
@@ -371,7 +316,7 @@
   (->* () () #:rest (listof unifiable?) goal/c))
 
 ; XXX Add contracts in theses macro expansions
-(provide %and %assert! %assert-after! %cut-delimiter %free-vars %is %let
+(provide %and %assert! %assert-after! %cut-delimiter %free-vars %assign %let
          %or %rel %which %find-all !)
 (provide/contract
  [goal/c contract?]

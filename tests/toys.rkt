@@ -10,7 +10,7 @@
 (define %length
   (%rel (h t n m)
     (('() 0))
-    (((cons h t) n) (%length t m) (%is n (+ m 1)))))
+    (((cons h t) n) (%length t m) (%assign n (m) (+ m 1)))))
 
 ;(%delete x y z) holds if z is y with all x's removed
 
@@ -41,7 +41,7 @@
 	     (%rel (m n m+1 x y z)
 	       (('() m m))
 	       (((cons x y) m n)
-		(%delete x y z) (%is m+1 (+ m 1)) (countaux z m+1 n)))))
+                (%delete x y z) (%assign m+1 (m) (+ m 1)) (countaux z m+1 n)))))
     (%rel (x n)
       ((x n) (countaux x 0 n)))))
 
@@ -74,7 +74,7 @@
 (define %fact*
   (%rel (n n! n-1 n-1!)
     ((0 1))
-    ((n n!) (%is n-1 (- n 1)) (%fact n-1 n-1!) (%is n! (* n n-1!)))))
+    ((n n!) (%assign n-1 (n) (- n 1)) (%fact n-1 n-1!) (%assign n! (n n-1!) (* n n-1!)))))
 
 ;same thing, but tailcall optimizing
 
@@ -82,7 +82,7 @@
   (letrec ((factaux
 	     (%rel (n! m x m-1 xx)
 	       ((0 n! n!))
-	       ((m x n!) (%is m-1 (- m 1)) (%is xx (* x m))
+               ((m x n!) (%assign m-1 (m) (- m 1)) (%assign xx (x m) (* x m))
 		(factaux m-1 xx n!)))))
     (%rel (n n!)
       ((n n!) (factaux n 1 n!)))))

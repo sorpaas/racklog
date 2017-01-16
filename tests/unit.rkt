@@ -472,9 +472,9 @@
  (%which () (%if-then-else %fail %true %true)) => empty
  (%more) => #f
  
- (%which (x) (%is x (* 6 7))) => `([x . 42])
+ (%which (x) (%assign x () (* 6 7))) => `([x . 42])
  (%more) => #f
- (%which (x) (%let (y) (%and (%= y 7) (%is x (* 6 y))))) => `([x . 42])
+ (%which (x) (%let (y) (%and (%= y 7) (%assign x (y) (* 6 y))))) => `([x . 42])
  (%more) => #f
  
  (%which () (%let (x) (%= x x))) => empty

@@ -5,9 +5,10 @@
   (%rel (x y x1 y1)
         [(0 1) !]
         [(x y) (%< x 0) ! %fail]
-        [(x y) (%is x1 (- x 1))
-               (%factorial x1 y1)
-               (%is y (* y1 x))]))
+        [(x y)
+         (%assign x1 (x) (- x 1))
+         (%factorial x1 y1)
+         (%assign y (y1 x) (* y1 x))]))
 
 (test
  (%which ()
