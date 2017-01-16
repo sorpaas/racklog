@@ -494,9 +494,9 @@ more efficient @racket[%factorial] predicate:
 (define %factorial
   (%rel (x y x1 y1)
     [(0 1)]
-    [(x y) (%is x1 (- x 1))
+    [(x y) (%is x1 (x) (- x 1))
            (%factorial x1 y1)
-           (%is y (* y1 x))]))
+           (%is y (y1 x) (* y1 x))]))
 ]
 
 A price that this efficiency comes with is that we can
@@ -510,7 +510,7 @@ directly:
 (define %factorial
   (%rel (x y)
     [(x y)
-     (%is y (racket-factorial
+     (%is y (x) (racket-factorial
 	      x))]))
 ]
 
@@ -578,7 +578,7 @@ checks in Racklog.  Thus, to test if @racket[_X] is a string, the
 following goal could be used:
 
 @racketblock[
-(%is #t (string? _X))
+(%is #t (_X) (string? _X))
 ]
 
 User-defined Racket predicates, in addition to primitive Racket
@@ -927,9 +927,9 @@ predicate, as defined in @secref{is}:
 (define %factorial
   (%rel (x y x1 y1)
     [(0 1)]
-    [(x y) (%is x1 (- x 1))
+    [(x y) (%is x1 (x) (- x 1))
            (%factorial x1 y1)
-           (%is y (* y1 x))]))
+           (%is y (y1 x) (* y1 x))]))
 ]
 
 Clearly,
@@ -969,9 +969,9 @@ use another cut:
   (%rel (x y x1 y1)
     [(0 1) !]
     [(x y) (%< x 0) ! %fail]
-    [(x y) (%is x1 (- x 1))
+    [(x y) (%is x1 (x) (- x 1))
            (%factorial x1 y1)
-           (%is y (* y1 x))]))
+           (%is y (y1 x) (* y1 x))]))
 ]
 
 @interaction[#:eval racklog-eval
